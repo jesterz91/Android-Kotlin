@@ -3,22 +3,18 @@ package io.github.jesterz91.daggersample.ui
 import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import io.github.jesterz91.daggersample.App
+import dagger.android.AndroidInjection
+import dagger.android.AndroidInjector
+import dagger.android.DispatchingAndroidInjector
+import dagger.android.HasAndroidInjector
 import io.github.jesterz91.daggersample.R
-import io.github.jesterz91.daggersample.di.component.MainActivityComponent
-import io.github.jesterz91.daggersample.di.module.MainActivityModule
 import io.github.jesterz91.daggersample.util.Logger
 import javax.inject.Inject
 
-class MainActivity : AppCompatActivity(R.layout.activity_main), Logger {
+class MainActivity : AppCompatActivity(R.layout.activity_main), HasAndroidInjector, Logger {
 
-    val mainActivityComponent: MainActivityComponent by lazy {
-        (application as App).appComponent
-            .mainActivityComponentBuilder()
-            .setActivity(this)
-            .setModule(MainActivityModule)
-            .build()
-    }
+    @Inject
+    lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
@@ -27,9 +23,8 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), Logger {
     lateinit var activityName: String
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        AndroidInjection.inject(this)
         super.onCreate(savedInstanceState)
-
-        mainActivityComponent.inject(this)
 
         supportFragmentManager.beginTransaction()
             .replace(R.id.container, MainFragment())
@@ -37,5 +32,9 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), Logger {
 
         debug("sharedPreferences: $sharedPreferences")
         debug("activityName: $activityName")
+    }
+
+    override fun androidInjector(): AndroidInjector<Any> {
+        return dispatchingAndroidInjector
     }
 }

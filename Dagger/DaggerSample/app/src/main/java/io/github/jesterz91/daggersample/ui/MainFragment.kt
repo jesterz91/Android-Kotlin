@@ -1,11 +1,12 @@
 package io.github.jesterz91.daggersample.ui
 
+import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
+import dagger.android.support.AndroidSupportInjection
 import io.github.jesterz91.daggersample.R
-import io.github.jesterz91.daggersample.di.module.MainFragmentModule
 import io.github.jesterz91.daggersample.util.Logger
 import javax.inject.Inject
 
@@ -20,16 +21,13 @@ class MainFragment : Fragment(R.layout.fragment_main), Logger {
     @set:[Inject]
     var number: Int = 0
 
+    override fun onAttach(context: Context) {
+        AndroidSupportInjection.inject(this)
+        super.onAttach(context)
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        (requireActivity() as MainActivity).mainActivityComponent
-            .mainFragmentBuilder()
-            .setFragment(this)
-            .setModule(MainFragmentModule)
-            .build()
-            .inject(this)
-
         debug("sharedPreferences: $sharedPreferences")
         debug("activityName: $activityName")
         debug("number: $number")

@@ -6,11 +6,13 @@ import io.github.jesterz91.daggersample.di.scope.FragmentScope
 import kotlin.random.Random
 
 @Module
-object MainFragmentModule {
+abstract class MainFragmentModule {
 
-    @Provides
-    @FragmentScope
-    fun provideInt(): Int {
-        return Random.nextInt()
+    companion object {
+        @Provides
+        @FragmentScope
+        fun provideInt(): Int {
+            return Random.nextInt()
+        }
     }
 }
