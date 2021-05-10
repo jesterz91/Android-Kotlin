@@ -2,19 +2,13 @@ package io.github.jesterz91.daggersample.ui
 
 import android.content.SharedPreferences
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import dagger.android.AndroidInjection
-import dagger.android.AndroidInjector
-import dagger.android.DispatchingAndroidInjector
-import dagger.android.HasAndroidInjector
+import dagger.android.support.DaggerAppCompatActivity
 import io.github.jesterz91.daggersample.R
 import io.github.jesterz91.daggersample.util.Logger
 import javax.inject.Inject
 
-class MainActivity : AppCompatActivity(R.layout.activity_main), HasAndroidInjector, Logger {
-
-    @Inject
-    lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
+class MainActivity : DaggerAppCompatActivity(R.layout.activity_main), Logger {
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
@@ -32,9 +26,5 @@ class MainActivity : AppCompatActivity(R.layout.activity_main), HasAndroidInject
 
         debug("sharedPreferences: $sharedPreferences")
         debug("activityName: $activityName")
-    }
-
-    override fun androidInjector(): AndroidInjector<Any> {
-        return dispatchingAndroidInjector
     }
 }

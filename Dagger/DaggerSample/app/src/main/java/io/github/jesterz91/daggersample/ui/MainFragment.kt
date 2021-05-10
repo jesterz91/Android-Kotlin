@@ -4,13 +4,13 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
-import androidx.fragment.app.Fragment
 import dagger.android.support.AndroidSupportInjection
+import dagger.android.support.DaggerFragment
 import io.github.jesterz91.daggersample.R
 import io.github.jesterz91.daggersample.util.Logger
 import javax.inject.Inject
 
-class MainFragment : Fragment(R.layout.fragment_main), Logger {
+class MainFragment : DaggerFragment(R.layout.fragment_main), Logger {
 
     @Inject
     lateinit var sharedPreferences: SharedPreferences
