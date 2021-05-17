@@ -8,5 +8,5 @@ import retrofit2.http.Path
 interface UserService {
 
     @GET("/users/{userId}")
-    fun getUser(@Path("userId") id: Long): Single<List<User>>
+    fun getUser(@Path("userId") id: Long): Single<User>
 }

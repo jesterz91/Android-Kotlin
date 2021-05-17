@@ -6,6 +6,7 @@ import io.github.jesterz91.archsample.BR
 import io.github.jesterz91.archsample.R
 import io.github.jesterz91.archsample.databinding.ItemPostBinding
 import io.github.jesterz91.archsample.ui.common.BindingViewHolder
+import io.github.jesterz91.archsample.ui.post.data.PostItem
 import javax.inject.Inject
 
 class PostAdapter @Inject constructor() : RecyclerView.Adapter<BindingViewHolder<ItemPostBinding>>() {

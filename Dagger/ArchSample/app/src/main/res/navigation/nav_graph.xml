@@ -9,6 +9,24 @@
         android:id="@+id/postFragment"
         android:name="io.github.jesterz91.archsample.ui.post.PostFragment"
         android:label="fragment_post"
-        tools:layout="@layout/fragment_post" />
+        tools:layout="@layout/fragment_post">
+
+        <action
+            android:id="@+id/action_postFragment_to_postDetailFragment"
+            app:destination="@id/postDetailFragment"
+            app:enterAnim="@anim/nav_default_enter_anim"
+            app:exitAnim="@anim/nav_default_exit_anim" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/postDetailFragment"
+        android:name="io.github.jesterz91.archsample.ui.detail.PostDetailFragment"
+        android:label="fragment_post_detail"
+        tools:layout="@layout/fragment_post_detail">
+
+        <argument
+            android:name="post"
+            app:argType="io.github.jesterz91.archsample.network.data.Post" />
+    </fragment>
 
 </navigation>

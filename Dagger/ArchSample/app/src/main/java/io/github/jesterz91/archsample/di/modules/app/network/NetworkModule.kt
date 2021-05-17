@@ -7,6 +7,7 @@ import io.github.jesterz91.archsample.BuildConfig
 import io.github.jesterz91.archsample.network.CommentService
 import io.github.jesterz91.archsample.network.PostService
 import io.github.jesterz91.archsample.network.UserService
+import io.reactivex.rxjava3.schedulers.Schedulers
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -76,7 +77,7 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideCallAdapter(): CallAdapter.Factory {
-        return RxJava3CallAdapterFactory.create()
+        return RxJava3CallAdapterFactory.createWithScheduler(Schedulers.io())
     }
 
     @Provides

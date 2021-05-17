@@ -6,23 +6,23 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import dagger.Module
 import dagger.Provides
-import io.github.jesterz91.archsample.databinding.FragmentPostBinding
+import io.github.jesterz91.archsample.databinding.FragmentPostDetailBinding
 import io.github.jesterz91.archsample.di.qualifier.ApplicationContext
 import io.github.jesterz91.archsample.di.scope.FragmentScope
-import io.github.jesterz91.archsample.ui.post.PostFragment
+import io.github.jesterz91.archsample.ui.detail.PostDetailFragment
 
 @Module
-object PostModule {
+object PostDetailModule {
 
     @Provides
     @FragmentScope
-    fun provideBinding(@ApplicationContext context: Context): FragmentPostBinding {
-        return FragmentPostBinding.inflate(LayoutInflater.from(context), null, false)
+    fun provideBinding(@ApplicationContext context: Context): FragmentPostDetailBinding {
+        return FragmentPostDetailBinding.inflate(LayoutInflater.from(context), null, false)
     }
 
     @Provides
     @FragmentScope
-    fun provideNavController(fragment: PostFragment): NavController {
+    fun provideNavController(fragment: PostDetailFragment): NavController {
         return NavHostFragment.findNavController(fragment)
     }
 }

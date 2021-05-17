@@ -6,7 +6,7 @@
     <data>
         <variable
             name="item"
-            type="io.github.jesterz91.archsample.ui.post.PostItem" />
+            type="io.github.jesterz91.archsample.ui.post.data.PostItem" />
     </data>
 
     <LinearLayout
@@ -29,6 +29,7 @@
                 android:padding="16dp"
                 android:singleLine="true"
                 android:text="@{item.post.title}"
+                android:onClick="@{v -> item.onPostClick.invoke(item)}"
                 android:textColor="@color/black"
                 android:textStyle="bold"
                 tools:text="post title" />
