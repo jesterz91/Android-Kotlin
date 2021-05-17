@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.viewModels
 import dagger.android.support.DaggerFragment
 import io.github.jesterz91.archsample.databinding.FragmentPostBinding
 import io.github.jesterz91.archsample.di.modules.app.viewmodel.ViewModelFactory
@@ -23,14 +23,13 @@ class PostFragment: DaggerFragment(), Logger {
     @Inject
     lateinit var viewModelFactory: ViewModelFactory
 
-    private lateinit var postViewModel: PostViewModel
+    private val postViewModel: PostViewModel by viewModels { viewModelFactory }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        postViewModel = ViewModelProvider(this, viewModelFactory)[PostViewModel::class.java]
         return binding.root
     }
 
