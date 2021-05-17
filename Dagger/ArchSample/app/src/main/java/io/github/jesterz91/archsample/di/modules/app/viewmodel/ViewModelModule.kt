@@ -7,6 +7,7 @@ import dagger.Module
 import dagger.multibindings.IntoMap
 import io.github.jesterz91.archsample.ui.detail.PostDetailViewModel
 import io.github.jesterz91.archsample.ui.post.PostViewModel
+import io.github.jesterz91.archsample.ui.user.UserViewModel
 
 @Module
 abstract class ViewModelModule {
@@ -23,4 +24,9 @@ abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(PostDetailViewModel::class)
     abstract fun bindsPostDetailViewModel(viewModel: PostDetailViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(UserViewModel::class)
+    abstract fun bindsUserViewModel(viewModel: UserViewModel): ViewModel
 }

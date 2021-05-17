@@ -16,6 +16,7 @@
             app:destination="@id/postDetailFragment"
             app:enterAnim="@anim/nav_default_enter_anim"
             app:exitAnim="@anim/nav_default_exit_anim" />
+
     </fragment>
 
     <fragment
@@ -27,6 +28,23 @@
         <argument
             android:name="post"
             app:argType="io.github.jesterz91.archsample.network.data.Post" />
+
+        <action
+            android:id="@+id/action_postDetailFragment_to_userFragment"
+            app:destination="@id/userFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/userFragment"
+        android:name="io.github.jesterz91.archsample.ui.user.UserFragment"
+        android:label="UserFragment"
+        tools:layout="@layout/fragment_user">
+
+        <argument
+            android:name="userId"
+            app:argType="long" />
+
     </fragment>
 
 </navigation>

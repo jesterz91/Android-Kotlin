@@ -6,14 +6,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.navigation.NavController
+import androidx.navigation.NavDirections
 import dagger.android.support.DaggerFragment
 import io.github.jesterz91.archsample.databinding.FragmentPostBinding
 import io.github.jesterz91.archsample.di.modules.app.viewmodel.ViewModelFactory
 import io.github.jesterz91.archsample.extension.observe
-import io.github.jesterz91.archsample.util.Logger
 import javax.inject.Inject
 
-class PostFragment: DaggerFragment(), Logger {
+class PostFragment: DaggerFragment() {
 
     @Inject
     lateinit var binding: FragmentPostBinding
@@ -41,8 +41,6 @@ class PostFragment: DaggerFragment(), Logger {
         super.onViewCreated(view, savedInstanceState)
         savedInstanceState ?: postViewModel.loadPosts()
 
-        debug("PostFragment Created")
-
         with(binding) {
             lifecycleOwner = viewLifecycleOwner
             viewModel = postViewModel
@@ -55,7 +53,7 @@ class PostFragment: DaggerFragment(), Logger {
         observe(postViewModel.postsLiveData, postAdapter::setItems)
 
         observe(postViewModel.postClickEvent) { postItem ->
-            val action = PostFragmentDirections.actionPostFragmentToPostDetailFragment(postItem.post)
+            val action: NavDirections = PostFragmentDirections.actionPostFragmentToPostDetailFragment(postItem.post)
             navController.navigate(action)
         }
     }

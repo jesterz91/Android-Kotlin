@@ -6,15 +6,15 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.navigation.NavController
+import androidx.navigation.NavDirections
 import androidx.navigation.fragment.navArgs
 import dagger.android.support.DaggerFragment
 import io.github.jesterz91.archsample.databinding.FragmentPostDetailBinding
 import io.github.jesterz91.archsample.di.modules.app.viewmodel.ViewModelFactory
 import io.github.jesterz91.archsample.extension.observe
-import io.github.jesterz91.archsample.util.Logger
 import javax.inject.Inject
 
-class PostDetailFragment : DaggerFragment(), Logger {
+class PostDetailFragment : DaggerFragment() {
 
     @Inject
     lateinit var binding: FragmentPostDetailBinding
@@ -56,7 +56,8 @@ class PostDetailFragment : DaggerFragment(), Logger {
         observe(postDetailViewModel.postDetailLiveData, postDetailAdapter::setItems)
 
         observe(postDetailViewModel.postDetailClickEvent) { user ->
-            debug("user: $user")
+            val action: NavDirections = PostDetailFragmentDirections.actionPostDetailFragmentToUserFragment(user.id)
+            navController.navigate(action)
         }
     }
 }
