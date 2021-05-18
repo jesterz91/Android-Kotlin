@@ -26,4 +26,9 @@ class UserViewModel @Inject constructor(private val userService: UserService) : 
             .subscribe(_userLiveData::postValue)
             .addTo(compositeDisposable)
     }
+
+    override fun onCleared() {
+        super.onCleared()
+        compositeDisposable.clear()
+    }
 }
