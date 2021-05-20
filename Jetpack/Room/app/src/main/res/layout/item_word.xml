@@ -20,7 +20,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center_vertical"
-            android:paddingLeft="8dp"
+            android:paddingStart="8dp"
             android:textSize="16sp"
             android:textStyle="bold"
             tools:text="text of word" />

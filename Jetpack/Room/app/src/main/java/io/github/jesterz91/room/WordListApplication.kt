@@ -3,7 +3,7 @@ package io.github.jesterz91.room
 import android.app.Application
 import com.facebook.stetho.Stetho
 
-class MyApplication : Application(){
+class WordListApplication : Application(){
 
     override fun onCreate() {
         super.onCreate()
