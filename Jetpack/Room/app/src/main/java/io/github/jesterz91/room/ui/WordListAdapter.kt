@@ -11,7 +11,7 @@ class WordListAdapter(private val onWordDelete: (Word) -> Unit) : RecyclerView.A
     private val words = mutableListOf<Word>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WordViewHolder {
-        val biding = ItemWordBinding.inflate(LayoutInflater.from(parent.context))
+        val biding = ItemWordBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return WordViewHolder(biding).apply {
             binding.deleteWord.setOnClickListener {
                 onWordDelete(words[bindingAdapterPosition])
@@ -29,7 +29,6 @@ class WordListAdapter(private val onWordDelete: (Word) -> Unit) : RecyclerView.A
 
     override fun getItemCount(): Int = words.size
 
-    // 뷰 홀더
     inner class WordViewHolder(val binding: ItemWordBinding) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(word: Word) {
