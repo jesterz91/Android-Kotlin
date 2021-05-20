@@ -1,6 +1,6 @@
 package io.github.jesterz91.pagingwithroom.db
 
-import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
@@ -10,14 +10,17 @@ import androidx.room.Query
 interface CheeseDao {
 
     @Query("SELECT * FROM Cheese ORDER BY id ASC")
-    fun allCheeses(): DataSource.Factory<Int, Cheese>
+    fun selectAll(): PagingSource<Int, Cheese>
+
+    @Query("SELECT * FROM Cheese ORDER BY id ASC")
+    fun getCheeseList(): List<Cheese>
 
     @Insert
     fun insert(cheeses: List<Cheese>)
 
     @Insert
-    fun insert(cheese: Cheese)
+    suspend fun insert(cheese: Cheese)
 
     @Delete
-    fun delete(cheese: Cheese)
+    suspend fun delete(cheese: Cheese)
 }

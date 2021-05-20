@@ -1,60 +1,55 @@
-package io.github.jesterz91.pagingwithroom.view
+package io.github.jesterz91.pagingwithroom.ui
 
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.inputmethod.EditorInfo
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import io.github.jesterz91.pagingwithroom.R
-import kotlinx.android.synthetic.main.activity_main.*
+import io.github.jesterz91.pagingwithroom.databinding.ActivityCheeseBinding
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.koin.androidx.viewmodel.ext.android.viewModel
 
-class MainActivity : AppCompatActivity() {
-
-//    private val viewModel: CheeseViewModel by lazy {
-//        ViewModelProviders.of(this).get(CheeseViewModel::class.java)
-//    }
+class CheeseActivity : AppCompatActivity() {
 
     private val viewModel by viewModel<CheeseViewModel>()
 
+    private val binding: ActivityCheeseBinding by lazy { ActivityCheeseBinding.inflate(layoutInflater) }
+
+    private val cheeseAdapter: CheeseAdapter = CheeseAdapter()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(binding.root)
 
-        val cheeseAdapter = CheeseAdapter()
-
-        cheeseList.apply {
+        binding.cheeseListView.run {
             setHasFixedSize(true)
-            layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = cheeseAdapter
         }
 
-        viewModel.allCheeses.observe(this, Observer {
-            cheeseAdapter.submitList(it)
-        })
+        lifecycleScope.launch {
+            viewModel.stream.collectLatest(cheeseAdapter::submitData)
+        }
 
-        // 아이템 추가 설정
-        initAddButtonListener()
+        initAddButtonListener() // 아이템 추가 설정
 
-        // 스와이프로 아이템 삭제
-        initSwipeToDelete()
+        initSwipeToDelete() // 스와이프로 아이템 삭제
     }
 
     private fun addCheese() {
-        val newCheese = inputText.text.trim()
+        val newCheese = binding.inputText.text.trim()
+
         if (newCheese.isNotEmpty()) {
             viewModel.insert(newCheese)
-            inputText.setText("")
+            binding.inputText.setText("")
         }
     }
 
-    private fun initAddButtonListener() {
-        addButton.setOnClickListener {
-            addCheese()
-        }
+    private fun initAddButtonListener(): Unit = with(binding) {
+        addButton.setOnClickListener { addCheese() }
+
         inputText.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 addCheese()
@@ -62,6 +57,7 @@ class MainActivity : AppCompatActivity() {
             }
             false
         }
+
         inputText.setOnKeyListener { _, keyCode, event ->
             if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
                 addCheese()
@@ -87,10 +83,8 @@ class MainActivity : AppCompatActivity() {
 
             // 스와이프 완료시 아이템 삭제
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                (viewHolder as CheeseAdapter.CheeseViewHolder).cheese?.let {
-                    viewModel.remove(it)
-                }
+                (viewHolder as? CheeseAdapter.CheeseViewHolder)?.cheese?.run(viewModel::remove)
             }
-        }).attachToRecyclerView(cheeseList)
+        }).attachToRecyclerView(binding.cheeseListView)
     }
 }
