@@ -1,22 +1,16 @@
 package io.github.jesterz91.pagingwithnetwork.di
 
-import io.github.jesterz91.pagingwithnetwork.view.GithubViewModel
-import io.github.jesterz91.pagingwithnetwork.view.RedditViewModel
-import io.reactivex.disposables.CompositeDisposable
+import io.github.jesterz91.pagingwithnetwork.ui.github.GithubViewModel
+import io.github.jesterz91.pagingwithnetwork.ui.main.MainViewModel
+import io.github.jesterz91.pagingwithnetwork.ui.reddit.RedditViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val vmModule = module {
 
-    viewModel {
-        GithubViewModel(get(), get())
-    }
+    viewModel { MainViewModel() }
 
-    viewModel {
-        RedditViewModel(get(), get())
-    }
+    viewModel { GithubViewModel(get()) }
 
-    factory {
-        CompositeDisposable()
-    }
+    viewModel { RedditViewModel(get()) }
 }
