@@ -23,8 +23,8 @@ abstract class BaseFragment<B: ViewBinding>(private val bind: (View) -> B) : Fra
         return binding?.root
     }
 
-    override fun onDestroy() {
+    override fun onDestroyView() {
+        super.onDestroyView()
         binding = null
-        super.onDestroy()
     }
 }

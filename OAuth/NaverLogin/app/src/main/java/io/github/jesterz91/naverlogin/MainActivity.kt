@@ -1,88 +1,103 @@
 package io.github.jesterz91.naverlogin
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import com.google.gson.Gson
 import com.nhn.android.naverlogin.OAuthLogin
 import com.nhn.android.naverlogin.data.OAuthLoginState
-import kotlinx.android.synthetic.main.activity_main.*
-import kotlinx.coroutines.*
-import org.jetbrains.anko.*
-import kotlin.coroutines.CoroutineContext
+import io.github.jesterz91.naverlogin.data.NaverLoginResponse
+import io.github.jesterz91.naverlogin.data.User
+import io.github.jesterz91.naverlogin.databinding.ActivityMainBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class MainActivity : AppCompatActivity(), CoroutineScope, AnkoLogger {
+class MainActivity : AppCompatActivity() {
 
-    private val mainJob = Job()
-    override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Main + mainJob
+    private val naverLoginModule: OAuthLogin = OAuthLogin.getInstance()
 
-    private val naverLoginModule = OAuthLogin.getInstance()
+    private val binding: ActivityMainBinding by lazy { ActivityMainBinding.inflate(layoutInflater) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        // 로그인 상태 확인
-        if (!checkLoginState()) {
-            startActivity(intentFor<LoginActivity>().clearTask().newTask())
-            return
+        with(binding) {
+            setContentView(root)
+            logoutButton.setOnClickListener { logout() }
+            unlinkButton.setOnClickListener { unlink() }
         }
-
-        logoutButton.setOnClickListener { logout() }
-        unlinkButton.setOnClickListener { unlink() }
     }
 
-    // 네이버 로그인 상태 확인
-    private fun checkLoginState(): Boolean {
-        if (naverLoginModule.getState(this) === OAuthLoginState.OK) {
-            val accessToken = naverLoginModule.getAccessToken(this)
-            requestUserInfo(accessToken)
-            return true
-        }
-        return false
+    override fun onResume() {
+        super.onResume()
+        checkLoginState()
     }
 
-    private fun requestUserInfo(accessToken: String) = launch(Dispatchers.IO) {
-        // 네이버 액세스 토큰으로 네이버 API 에 접근하여 사용자 정보를 가져옴
-        val url = "https://openapi.naver.com/v1/nid/me"
-        val response = naverLoginModule.requestApi(this@MainActivity, accessToken, url)
-        val naverLogin = Gson().fromJson(response, NaverLogin::class.java)
-
-        withContext(Dispatchers.Main) {
-            naverLogin.response.let { naverUser ->
-
-                Glide.with(this@MainActivity)
-                    .load(naverUser.profile_image)
-                    .apply(RequestOptions.circleCropTransform())
-                    .into(imageView)
-
-                nameTextView.text = naverUser.name
-                nickNameTextView.text = naverUser.nickname
-                emailTextView.text = naverUser.email
+    private fun checkLoginState() {
+        when (naverLoginModule.getState(this)) {
+            OAuthLoginState.OK -> {
+                naverLoginModule.getAccessToken(this).run(::requestUserInfo)
+            }
+            else -> {
+                redirectLoginActivity()
             }
         }
     }
 
+    private fun requestUserInfo(accessToken: String) = lifecycleScope.launch {
+        // 네이버 액세스 토큰으로 네이버 API 에 접근하여 사용자 정보를 가져옴
+        val url = "https://openapi.naver.com/v1/nid/me"
+
+        val response = withContext(Dispatchers.IO) {
+            naverLoginModule.requestApi(this@MainActivity, accessToken, url)
+        }
+        val loginResponse = Gson().fromJson(response, NaverLoginResponse::class.java)
+
+        bindUser(loginResponse.user)
+    }
+
+    private fun bindUser(user: User): Unit = with(binding) {
+        nameTextView.text = user.name
+        nickNameTextView.text = user.nickname
+        emailTextView.text = user.email
+
+        Glide.with(this@MainActivity)
+            .load(user.profileImage)
+            .apply(RequestOptions.circleCropTransform())
+            .into(imageView)
+    }
+
     private fun logout() {
         naverLoginModule.logout(this)
-        startActivity(intentFor<LoginActivity>().clearTask().newTask())
+        redirectLoginActivity()
     }
 
-    private fun unlink() = launch(Dispatchers.IO) {
-        val isSuccessDeleteToken = naverLoginModule.logoutAndDeleteToken(this@MainActivity)
-
-        if (isSuccessDeleteToken) {
-            startActivity(intentFor<LoginActivity>().clearTask().newTask())
-        } else {
-            error { "ErrorCode : ${naverLoginModule.getLastErrorCode(this@MainActivity).code}" }
-            error { "ErrorDesc : ${naverLoginModule.getLastErrorDesc(this@MainActivity)}" }
+    private fun unlink() = lifecycleScope.launch {
+        val isSuccessDeleteToken = withContext(Dispatchers.IO) {
+            naverLoginModule.logoutAndDeleteToken(this@MainActivity)
         }
+
+        if (!isSuccessDeleteToken) {
+            Log.e(TAG, "ErrorCode : ${naverLoginModule.getLastErrorCode(this@MainActivity).code}")
+            Log.e(TAG, "ErrorDesc : ${naverLoginModule.getLastErrorDesc(this@MainActivity)}")
+        }
+
+        redirectLoginActivity()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        mainJob.cancelChildren()
+    private fun redirectLoginActivity() {
+        val intent = Intent(this, LoginActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        }
+        startActivity(intent)
+    }
+
+    companion object {
+        const val TAG = "MainActivity"
     }
 }

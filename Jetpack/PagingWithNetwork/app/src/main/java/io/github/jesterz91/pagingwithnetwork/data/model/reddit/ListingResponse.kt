@@ -6,8 +6,3 @@ data class ListingResponse(
     @SerializedName("data")
     val listingData: ListingData
 )
-
-
-
-
-
