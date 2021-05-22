@@ -2,81 +2,81 @@ package io.github.jesterz91.navigation
 
 import android.content.res.Resources
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.navigation.NavController
+import androidx.navigation.NavDeepLinkBuilder
+import androidx.navigation.NavDestination
 import androidx.navigation.findNavController
 import androidx.navigation.ui.*
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.android.synthetic.main.activity_navigation.*
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.info
-import org.jetbrains.anko.toast
+import io.github.jesterz91.navigation.databinding.ActivityNavigationBinding
+import io.github.jesterz91.navigation.fragment.FlowStepFragment
 
-class NavigationActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener, AnkoLogger {
+class NavigationActivity : AppCompatActivity(), BottomNavigationView.OnNavigationItemSelectedListener, NavController.OnDestinationChangedListener {
 
-    private lateinit var appBarConfiguration : AppBarConfiguration
+    private val binding: ActivityNavigationBinding by lazy { ActivityNavigationBinding.inflate(layoutInflater) }
+
+    private val navController: NavController by lazy { findNavController(R.id.my_nav_host_fragment) }
+
+    private val appBarConfiguration: AppBarConfiguration by lazy { AppBarConfiguration(navController.graph) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_navigation)
+        setContentView(binding.root)
 
-        val navController = findNavController(R.id.my_nav_host_fragment)
-        appBarConfiguration = AppBarConfiguration(navController.graph)
-
-        setupActionBar(navController, appBarConfiguration)
-        setupBottomNavMenu(navController)
-
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            val dest: String = try {
-                resources.getResourceName(destination.id)
-            } catch (e: Resources.NotFoundException) {
-                destination.id.toString()
-            }
-            toast("Navigated to $dest")
-            info("Navigated to $dest")
-        }
-
-        bottomNavigationView.setOnNavigationItemSelectedListener(this)
-    }
-
-    private fun setupActionBar(navController: NavController, appBarConfig : AppBarConfiguration) {
-        setupActionBarWithNavController(navController, appBarConfig)
-    }
-
-    private fun setupBottomNavMenu(navController: NavController) {
-        bottomNavigationView.setupWithNavController(navController)
+        navController.addOnDestinationChangedListener(this)
+        setupActionBarWithNavController(navController, appBarConfiguration)
+        
+        binding.bottomNavigationView.setupWithNavController(navController)
+        binding.bottomNavigationView.setOnNavigationItemSelectedListener(this)
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        return findNavController(R.id.my_nav_host_fragment).navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+        return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
     override fun onNavigationItemSelected(menu: MenuItem): Boolean {
-        when(menu.itemId) {
-            R.id.home_dest -> toast("home dest")
-            R.id.deeplink_dest -> toast("deep dest")
-            else -> toast("asd")
+        when (menu.itemId) {
+            R.id.home_dest -> {
+                val pendingIntent = NavDeepLinkBuilder(this)
+                        .setGraph(R.navigation.nav_graph)
+                        .setDestination(R.id.homeFragment)
+                        .createPendingIntent()
+
+                pendingIntent.send()
+            }
+            R.id.deeplink_dest -> {
+                val pendingIntent = navController.createDeepLink()
+                        .setGraph(R.navigation.nav_graph)
+                        .setDestination(R.id.flowStepTwoFragment)
+                        .setArguments(bundleOf(FlowStepFragment.FLOW_STEP_NUMBER to 4))
+                        .createPendingIntent()
+
+                pendingIntent.send()
+            }
         }
         return true
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // The NavigationView already has these same navigation items, so we only add
-        // navigation items to the menu here if there isn't a NavigationView
         menuInflater.inflate(R.menu.overflow_menu, menu)
         return true
-//        val retValue = super.onCreateOptionsMenu(menu)
-//        if (isShowOverflowMenu) {
-//
-//        }
-//        return retValue
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Have the NavigationUI look for an action or destination matching the menu
-        // item id and navigate there if found. Otherwise, bubble up to the parent.
-        return item.onNavDestinationSelected(findNavController(R.id.my_nav_host_fragment)) || super.onOptionsItemSelected(item)
+        return item.onNavDestinationSelected(navController) || super.onOptionsItemSelected(item)
+    }
+
+    override fun onDestinationChanged(controller: NavController, destination: NavDestination, arguments: Bundle?) {
+        val dest: String = try {
+            resources.getResourceName(destination.id)
+        } catch (e: Resources.NotFoundException) {
+            destination.id.toString()
+        }
+        Log.d("Navigation", "Navigated to $dest")
     }
 }

@@ -4,38 +4,48 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
+import androidx.navigation.NavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navOptions
 import io.github.jesterz91.navigation.R
-import kotlinx.android.synthetic.main.fragment_home.*
+import io.github.jesterz91.navigation.databinding.FragmentHomeBinding
 
-class HomeFragment: Fragment() {
+class HomeFragment: BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::bind), View.OnClickListener {
+
+    override val layoutResource: Int = R.layout.fragment_home
+
+    private val navController: NavController by lazy { findNavController() }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         setHasOptionsMenu(true)
-        return inflater.inflate(R.layout.fragment_home, container, false)
+        return super.onCreateView(inflater, container, savedInstanceState)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val options = navOptions {
-            anim {
-                enter = R.anim.slide_in_right
-                exit = R.anim.slide_out_left
-                popEnter = R.anim.slide_in_left
-                popExit = R.anim.slide_out_right
+        binding?.navigateActionButton?.setOnClickListener(this@HomeFragment)
+        binding?.navigateDestinationButton?.setOnClickListener(this@HomeFragment)
+    }
+
+    override fun onClick(v: View?) {
+        binding?.run {
+            when (v) {
+                navigateDestinationButton -> {
+                    val options = navOptions {
+                        anim {
+                            enter = R.anim.slide_in_right
+                            exit = R.anim.slide_out_left
+                            popEnter = R.anim.slide_in_left
+                            popExit = R.anim.slide_out_right
+                        }
+                    }
+                    navController.navigate(R.id.flowStepOneFragment, null, options)
+                }
+                navigateActionButton -> {
+                    val action = HomeFragmentDirections.actionHomeFragmentToFlowStepOneFragment(1)
+                    navController.navigate(action)
+                }
             }
-        }
-
-        navigate_destination_button.setOnClickListener {
-            findNavController().navigate(R.id.flowStepOneFragment, null, options)
-        }
-
-        navigate_action_button.setOnClickListener {
-            val bundle = bundleOf("flowStepNumber" to 1)
-            findNavController().navigate(R.id.action_homeFragment_to_flowStepOneFragment, bundle)
         }
     }
 }

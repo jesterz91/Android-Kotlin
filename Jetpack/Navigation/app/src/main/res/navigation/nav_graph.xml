@@ -16,14 +16,16 @@
 
         <action
             android:id="@+id/settings_dest"
-            app:destination="@id/settingsFragment"/>
+            app:destination="@id/settingsFragment" />
+
+        <deepLink app:uri="myapp://home" />
     </fragment>
 
     <fragment
         android:id="@+id/flowStepOneFragment"
         android:name="io.github.jesterz91.navigation.fragment.FlowStepFragment"
         android:label="Flow One"
-        tools:layout="@layout/fragment_flow_one">
+        tools:layout="@layout/fragment_flow_step">
         <action
             android:id="@+id/action_flowStepOneFragment_to_flowStepTwoFragment"
             app:destination="@id/flowStepTwoFragment" />
@@ -33,13 +35,14 @@
             android:defaultValue="1"
             app:argType="integer" />
 
+        <deepLink app:uri="myapp://flow" />
     </fragment>
 
     <fragment
         android:id="@+id/flowStepTwoFragment"
         android:name="io.github.jesterz91.navigation.fragment.FlowStepFragment"
         android:label="Flow Two"
-        tools:layout="@layout/fragment_flow_two">
+        tools:layout="@layout/fragment_flow_step">
         <action
             android:id="@+id/action_flowStepTwoFragment_to_homeFragment"
             app:popUpTo="@id/homeFragment" />
@@ -55,6 +58,9 @@
         android:id="@+id/settingsFragment"
         android:name="io.github.jesterz91.navigation.fragment.SettingsFragment"
         android:label="Setting"
-        tools:layout="@layout/fragment_settings" />
+        tools:layout="@layout/fragment_settings">
+
+        <deepLink app:uri="myapp://setting" />
+    </fragment>
 
 </navigation>

@@ -1,41 +1,38 @@
 package io.github.jesterz91.navigation.fragment
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import io.github.jesterz91.navigation.R
-import kotlinx.android.synthetic.main.fragment_flow_one.*
-import kotlinx.android.synthetic.main.fragment_flow_two.*
+import io.github.jesterz91.navigation.databinding.FragmentFlowStepBinding
 
-class FlowStepFragment : Fragment() {
+class FlowStepFragment : BaseFragment<FragmentFlowStepBinding>(FragmentFlowStepBinding::bind),
+    View.OnClickListener {
 
     private val safeArgs: FlowStepFragmentArgs by navArgs()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return when (safeArgs.flowStepNumber) {
-            2 -> inflater.inflate(R.layout.fragment_flow_two, container, false)
-            else -> inflater.inflate(R.layout.fragment_flow_one, container, false)
-        }
-    }
+    private val navController by lazy { findNavController() }
+
+    override val layoutResource: Int = R.layout.fragment_flow_step
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        binding?.text?.text = "FlowStep ${safeArgs.flowStepNumber}"
+
+        binding?.nextButton?.setOnClickListener(this)
+    }
+
+    override fun onClick(v: View?) {
         when (safeArgs.flowStepNumber) {
-            1 -> {
-                next_button.setOnClickListener {
-                    findNavController().navigate(R.id.action_flowStepOneFragment_to_flowStepTwoFragment)
-                }
-            }
-            2 -> {
-                finish_button.setOnClickListener {
-                    findNavController().navigate(R.id.action_flowStepTwoFragment_to_homeFragment, bundleOf("flowStepNumber" to 2))
-                }
-            }
+            1 -> navController.navigate(R.id.action_flowStepOneFragment_to_flowStepTwoFragment)
+            2 -> navController.navigate(R.id.action_flowStepTwoFragment_to_homeFragment, bundleOf(FLOW_STEP_NUMBER to 2))
         }
+    }
+
+    companion object {
+        const val FLOW_STEP_NUMBER = "flowStepNumber"
     }
 }
