@@ -1,81 +1,81 @@
 package io.github.jesterz91.kakaologin
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import android.util.Log
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
-import com.kakao.network.ErrorResult
-import com.kakao.usermgmt.UserManagement
-import com.kakao.usermgmt.callback.LogoutResponseCallback
-import com.kakao.usermgmt.callback.MeV2ResponseCallback
-import com.kakao.usermgmt.callback.UnLinkResponseCallback
-import com.kakao.usermgmt.response.MeV2Response
-import kotlinx.android.synthetic.main.activity_main.*
-import org.jetbrains.anko.*
+import com.kakao.sdk.user.UserApiClient
+import com.kakao.sdk.user.model.User
+import com.kakao.sdk.user.rx
+import io.github.jesterz91.kakaologin.databinding.ActivityMainBinding
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.schedulers.Schedulers
 
-class MainActivity : AppCompatActivity(), AnkoLogger {
+class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::inflate) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
         requestMe() // 사용자 정보 요쳥
 
-        logoutButton.setOnClickListener { logout() }
-        unlinkButton.setOnClickListener { unlink() }
+        binding.logoutButton.setOnClickListener { logout() }
+        binding.unlinkButton.setOnClickListener { unlink() }
     }
 
-    private fun redirectLoginActivity() = startActivity(intentFor<LoginActivity>().clearTask().newTask())
+    private fun bindUser(user: User): Unit = with(binding) {
+        val account = user.kakaoAccount
 
-    // 사용자 정보 요쳥
+        nameTextView.text = "${user.id}"
+        emailTextView.text = account?.email
+        nickNameTextView.text = account?.profile?.nickname
+
+        Glide.with(this@MainActivity)
+            .load(account?.profile?.thumbnailImageUrl)
+            .centerCrop()
+            .circleCrop()
+            .into(imageView)
+    }
+
+    /* 사용자 정보 요쳥 */
     private fun requestMe() {
-        val keys = listOf("properties.nickname", "kakao_account.email", "properties.profile_image", "properties.thumbnail_image")
-        UserManagement.getInstance().me(keys, object : MeV2ResponseCallback() {
-            override fun onSuccess(result: MeV2Response) {
-
-                Glide.with(this@MainActivity)
-                    .load(result.profileImagePath)
-                    .apply(RequestOptions.circleCropTransform())
-                    .into(imageView)
-
-                nameTextView.text = result.id.toString()
-                nickNameTextView.text = result.nickname
-                emailTextView.text = result.kakaoAccount.email
-            }
-
-            override fun onSessionClosed(errorResult: ErrorResult) {
+        UserApiClient.rx.me()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(::bindUser) { error ->
+                Log.e(TAG, "사용자 정보 요청 실패", error)
                 redirectLoginActivity()
-            }
-        })
+            }.addTo(disposables)
     }
 
-    // 로그아웃
+    /* 로그아웃 */
     private fun logout() {
-        UserManagement.getInstance().requestLogout(object : LogoutResponseCallback() {
-            override fun onCompleteLogout() {
+        UserApiClient.rx.logout()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                Log.i(TAG, "로그아웃 성공. SDK에서 토큰 삭제 됨")
                 redirectLoginActivity()
-            }
-        })
+            }, { error ->
+                Log.e(TAG, "로그아웃 실패. SDK에서 토큰 삭제 됨", error)
+                redirectLoginActivity()
+            }).addTo(disposables)
     }
 
-    // 연동해제
+    /* 연동해제 */
     private fun unlink() {
-        UserManagement.getInstance().requestUnlink(object : UnLinkResponseCallback() {
-            override fun onFailure(errorResult: ErrorResult?) {
-                error { errorResult?.errorMessage }
-            }
-
-            override fun onSessionClosed(errorResult: ErrorResult) {
+        UserApiClient.rx.unlink()
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                Log.i(TAG, "연결 끊기 성공. SDK에서 토큰 삭제 됨")
                 redirectLoginActivity()
-            }
-
-            override fun onNotSignedUp() {
+            }, { error ->
+                Log.e(TAG, "연결 끊기 실패", error)
                 redirectLoginActivity()
-            }
+            }).addTo(disposables)
+    }
 
-            override fun onSuccess(userId: Long?) {
-                redirectLoginActivity()
-            }
-        })
+    companion object {
+        const val TAG = "MainActivity"
     }
 }

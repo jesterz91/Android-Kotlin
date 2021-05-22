@@ -1,52 +1,50 @@
 package io.github.jesterz91.kakaologin
 
-import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import com.kakao.auth.ISessionCallback
-import com.kakao.auth.Session
-import com.kakao.util.exception.KakaoException
-import kotlinx.android.synthetic.main.activity_login.*
-import org.jetbrains.anko.*
+import android.util.Log
+import com.kakao.sdk.auth.model.OAuthToken
+import com.kakao.sdk.user.UserApiClient
+import com.kakao.sdk.user.rx
+import io.github.jesterz91.kakaologin.databinding.ActivityLoginBinding
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.addTo
 
-class LoginActivity : AppCompatActivity(), AnkoLogger {
-
-    private val kakaoCallback: KakaoSessionCallback by lazy {
-        KakaoSessionCallback()
-    }
+class LoginActivity : BaseActivity<ActivityLoginBinding>(ActivityLoginBinding::inflate) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_login)
-        Session.getCurrentSession().addCallback(kakaoCallback)
-        Session.getCurrentSession().checkAndImplicitOpen()
 
-        kakaoLoginButton.setOnClickListener {
-            kakaoLoginButton.performClick()
+        binding.kakaoLoginButton.setOnClickListener {
+            if (UserApiClient.instance.isKakaoTalkLoginAvailable(this)) {
+                loginWithKakaoTalk()
+            } else {
+                loginWithKakaoAccount()
+            }
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        Session.getCurrentSession().removeCallback(kakaoCallback)
+    private fun loginWithKakaoTalk() {
+        UserApiClient.rx.loginWithKakaoTalk(this)
+            .map(OAuthToken::accessToken)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(::handleAccessToke, ::handleError)
+            .addTo(disposables)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (Session.getCurrentSession().handleActivityResult(requestCode, resultCode, data)) {
-            return
-        }
-        super.onActivityResult(requestCode, resultCode, data)
+    private fun loginWithKakaoAccount() {
+        UserApiClient.rx.loginWithKakaoAccount(this)
+            .map(OAuthToken::accessToken)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(::handleAccessToke, ::handleError)
+            .addTo(disposables)
     }
 
-    private fun redirectMainActivity() = startActivity(intentFor<MainActivity>().clearTask().newTask())
+    private fun handleAccessToke(token: String) {
+        Log.i(TAG, "로그인 성공 $token")
+        redirectMainActivity()
+    }
 
-    inner class KakaoSessionCallback: ISessionCallback {
-        override fun onSessionOpenFailed(exception: KakaoException?) {
-            error { exception?.message }
-        }
-
-        override fun onSessionOpened() {
-            redirectMainActivity()
-        }
+    companion object {
+        const val TAG = "LoginActivity"
     }
 }

@@ -12,6 +12,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <activity android:name=".LoginActivity"/>
+
         <activity android:name=".MainActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,15 +22,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".LoginActivity"/>
-        <!-- 카카오 앱키 -->
-        <meta-data
-            android:name="com.kakao.sdk.AppKey"
-            android:value="@string/kakao_app_key" />
-        <!-- 카카오 클라이언트 시크릿 -->
-        <meta-data
-            android:name="com.kakao.sdk.ClientSecret"
-            android:value="@string/kakao_client_secret" />
+
+        <activity android:name="com.kakao.sdk.auth.AuthCodeHandlerActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <!-- Redirect URI: "kakao{NATIVE_APP_KEY}://oauth" -->
+                <data
+                    android:host="oauth"
+                    android:scheme="@string/kakao_scheme" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

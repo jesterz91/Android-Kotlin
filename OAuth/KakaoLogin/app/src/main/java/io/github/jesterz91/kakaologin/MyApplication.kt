@@ -1,37 +1,19 @@
 package io.github.jesterz91.kakaologin
 
 import android.app.Application
-import android.content.pm.PackageManager
-import android.util.Base64
-import com.kakao.auth.KakaoSDK
-import com.kakao.util.helper.Utility
-import org.jetbrains.anko.AnkoLogger
-import org.jetbrains.anko.error
-import org.jetbrains.anko.info
-import java.security.MessageDigest
-import java.security.NoSuchAlgorithmException
+import android.util.Log
+import com.kakao.sdk.common.KakaoSdk
+import com.kakao.sdk.common.util.Utility
 
-
-class MyApplication : Application(), AnkoLogger {
+class MyApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        KakaoSDK.init(KakaoSDKAdapter(this))
-        //getKeyHash()
-    }
 
-    private fun getKeyHash() {
-        val packageInfo = Utility.getPackageInfo(this, PackageManager.GET_SIGNATURES)
+        KakaoSdk.init(this, "{NATIVE_APP_KEY}")
 
-        packageInfo.signatures.forEach { signature ->
-            try {
-                val md = MessageDigest.getInstance("SHA")
-                md.update(signature.toByteArray())
-                info { "key_hash=${Base64.encodeToString(md.digest(), Base64.DEFAULT)}" }
-            } catch (e: NoSuchAlgorithmException) {
-                error { "Unable to get MessageDigest. signature=$signature" }
-                error { e.message }
-            }
+        if (BuildConfig.DEBUG) {
+            Log.d("kakao keyHash", Utility.getKeyHash(this))
         }
     }
 }
